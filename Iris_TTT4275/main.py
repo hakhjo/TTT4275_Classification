@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
-from classifier import classifier
-from data_modification import reduce_dataset
+from classifier import classifier 
+from data_modification import reduce_dataset, produce_histograms
 from matplotlib import pyplot as plt
 
 encoder = OneHotEncoder(sparse_output=False, categories="auto")
@@ -77,7 +77,10 @@ file_paths = ["class_1", "class_2", "class_3"]
 train_x, train_t, val_x, val_t = load_and_process_data(
     file_paths
 )
-c = classifier(3, 4)
+N = 4
+train_x = reduce_dataset(N, train_x)
+val_x = reduce_dataset(N, val_x)
+c = classifier(3, N)
 train_err, val_err = train_on_dataset(
     c, train_x, train_t, 2000, train_x, train_t
 )
