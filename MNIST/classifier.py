@@ -8,7 +8,7 @@ class NN:
 
     def evaluate(self, x):
         dist = np.sum(np.square(x-self.template_x), axis=1)
-        idx = np.argmax(dist)
+        idx = np.argmin(dist)
         return self.template_y[idx]
 
     def confusion(self, x, y):
