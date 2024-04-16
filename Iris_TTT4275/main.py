@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 from classifier import classifier 
 from data_modification import reduce_dataset, produce_histograms
+from matplotlib import pyplot as plt
 
 encoder = OneHotEncoder(sparse_output=False, categories="auto")
 
@@ -34,37 +35,56 @@ def load_and_process_data(file_paths):
     return training_data, training_labels, validation_data, validation_labels
 
 
-def train_on_dataset(c: classifier, x, t, N):
+def train_on_dataset(c: classifier, x, t, N, x_val, t_val):
+    train_err = np.zeros(N)
+    val_err = np.zeros(N)
     assert len(x) == len(t)
-    print("TRAINING...")
     for i in range(N):
         p = np.random.permutation(len(x))
-        acc = c.train(x[p, :], t[p, :], 0.001)
-        print(f"{i}/{N}: \t{100*acc:.2f}", end="\r", flush=True)
+        err = c.train(x[p, :], t[p, :], 0.001)
+        train_err[i] = err
+        val_err[i] = c.validate(x_val, t_val)
+        print(f"TRAINING... {i}/{N}: \t{100*err:.2f}", end="\r", flush=True)
 
-    print("DONE                                        ")
+    print("TRAINING... DONE                      ")
+    return train_err, val_err
+
+
+def display_results(train_err, val_err, train_conf, val_conf):
+    val_conf = 100.0 * val_conf / np.sum(val_conf, axis=1)
+    train_conf = 100.0 * train_conf / np.sum(train_conf, axis=1)
+    print("\n------------- RESULTS ---------------")
+    print("    Validation:            Training:")
+    print(f"ERROR RATE: {100 * val_err[-1]:.2f}            {100 * train_err[-1]:.2f}")
+    print("CONFUSION MATRICES")
+    for vr, tr in zip(val_conf, train_conf):
+        print(
+            " ".join(f"{c:>6.2f}" for c in vr),
+            " | ",
+            " ".join(f"{c:>6.2f}" for c in tr),
+        )
+
+    plt.plot(train_err, "r", label="training error")
+    plt.plot(val_err, "b", label="validation error")
+    plt.xlabel("Iteration")
+    plt.ylabel("Error rate")
+    plt.legend()
+    plt.show()
 
 
 file_paths = ["class_1", "class_2", "class_3"]
-# Load the data
-train_features, train_labels, val_features, val_labels = load_and_process_data(file_paths)
-N = 4
-produce_histograms(train_features, train_labels)
 
-reduced_training = reduce_dataset(N,train_features)
-reduced_validate = reduce_dataset(N, val_features)
-c = classifier(3, N)
-train_on_dataset(c, reduced_training, train_labels, 100)
-val_acc, val_conf = c.validate(reduced_validate, val_labels)
-train_acc, train_conf = c.validate(reduced_training, train_labels)
-val_conf_percent = 100.0 * val_conf / np.sum(val_conf, axis=1)
-train_conf_percent = 100.0 * train_conf / np.sum(train_conf, axis=1)
-print(f"Validation accuray: {100 * val_acc:.2f}")
-print(f"Training accuray: {100 * train_acc:.2f}")
-print("CONFUSION MATRICES\nValidation:            Training:")
-for vr, tr in zip(val_conf_percent, train_conf_percent):
-    print(" ".join(f"{c:>6.2f}" for c in vr), "|", " ".join(f"{c:>6.2f}" for c in tr))
+train_x, train_t, val_x, val_t = load_and_process_data(
+    file_paths
+)
+c = classifier(3, 4)
+train_err, val_err = train_on_dataset(
+    c, train_x, train_t, 2000, train_x, train_t
+)
+val_conf = c.confusion(val_x, val_t)
+train_conf = c.confusion(train_x, train_t)
+display_results(train_err, val_err, train_conf, val_conf)
 
-
+# reduce_dataset(3,train_features)
 # print("Validation Features:", val_features)
 # print(training_set)

@@ -15,26 +15,16 @@ class classifier:
         return sigmoid(self.W @ x)
     
     def train(self, x, t, step):
-        hits = 0
+        errors = 0
         for xk_, tk in zip(x, t):
             xk = np.append(xk_, 1)
             g = self.evaluate(xk)
             self.W = self.W - step * self.gradient(xk, g, tk)
-            if np.argmax(g) == np.argmax(tk):
-                hits += 1
-        return hits / len(x)
+            if np.argmax(g) != np.argmax(tk):
+                errors += 1
+        return errors / len(x)
 
-    def confusion_matrix(self, x, t):
-        conf = np.zeros((self.C, self.C))
-        for xk_, tk in zip(x, t):
-            xk = np.append(xk_, 1)
-            g = self.evaluate(xk)
-            conf[np.argmax(t), np.argmax(g)] += 1
-        return conf
-
-
-    def validate(self, x, t):
-        hits = 0
+    def confusion(self, x, t):
         conf = np.zeros((self.C, self.C))
         for xk_, tk in zip(x, t):
             xk = np.append(xk_, 1)
@@ -42,11 +32,20 @@ class classifier:
             truth = np.argmax(tk)
             guess = np.argmax(g)
             conf[truth, guess] += 1
-            if guess == truth:
-                hits += 1
-        return hits / len(x), conf
+        return conf
+
+    def validate(self, x, t):
+        errors = 0
+        for xk_, tk in zip(x, t):
+            xk = np.append(xk_, 1)
+            g = self.evaluate(xk)
+            truth = np.argmax(tk)
+            guess = np.argmax(g)
+            if guess != truth:
+                errors += 1
+        return errors / len(x)
         
 
 def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
+    return 1. / (1. + np.exp(-x))
 
