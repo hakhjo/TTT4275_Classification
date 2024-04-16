@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 from classifier import classifier 
-from data_modification import reduce_dataset
+from data_modification import reduce_dataset, produce_histograms
 
 encoder = OneHotEncoder(sparse_output=False, categories="auto")
 
@@ -46,16 +46,17 @@ def train_on_dataset(c: classifier, x, t, N):
 
 
 file_paths = ["class_1", "class_2", "class_3"]
-
 # Load the data
-train_features, train_labels, val_features, val_labels = load_and_process_data(
-    file_paths
-)
+train_features, train_labels, val_features, val_labels = load_and_process_data(file_paths)
+N = 4
+produce_histograms(train_features, train_labels)
 
-c = classifier(3, 4)
-train_on_dataset(c, train_features, train_labels, 100)
-val_acc, val_conf = c.validate(val_features, val_labels)
-train_acc, train_conf = c.validate(train_features, train_labels)
+reduced_training = reduce_dataset(N,train_features)
+reduced_validate = reduce_dataset(N, val_features)
+c = classifier(3, N)
+train_on_dataset(c, reduced_training, train_labels, 100)
+val_acc, val_conf = c.validate(reduced_validate, val_labels)
+train_acc, train_conf = c.validate(reduced_training, train_labels)
 val_conf_percent = 100.0 * val_conf / np.sum(val_conf, axis=1)
 train_conf_percent = 100.0 * train_conf / np.sum(train_conf, axis=1)
 print(f"Validation accuray: {100 * val_acc:.2f}")
@@ -65,6 +66,5 @@ for vr, tr in zip(val_conf_percent, train_conf_percent):
     print(" ".join(f"{c:>6.2f}" for c in vr), "|", " ".join(f"{c:>6.2f}" for c in tr))
 
 
-reduce_dataset(3,train_features)
 # print("Validation Features:", val_features)
 # print(training_set)
