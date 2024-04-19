@@ -1,5 +1,7 @@
 import numpy as np
 import data_loader
+import pandas as pd
+import seaborn as sn
 from matplotlib import pyplot as plt
 from classifier import NN
 from sklearn.cluster import KMeans
@@ -65,11 +67,21 @@ def KNearestNeighbours(n_neighbors):
     print(f"train Error rate with K = {n_neighbors}:{nn_error_rate_train}")
     nn_conf_matrix = confusion_matrix(test_y, test_predictions)
     nn_error_rate = 1 - accuracy_score(test_y, test_predictions)
+    plot_confusion_matrix(f"Confusion Matrix with N = {n_neighbors}", nn_conf_matrix)
 
-    print(f"Conf matrix with K = {n_neighbors}:\n {nn_conf_matrix}")
+    # print(f"Conf matrix with K = {n_neighbors}:\n {nn_conf_matrix}")
     print(f"Error rate with K = {n_neighbors} {nn_error_rate}")
 
     return end -start
+
+def plot_confusion_matrix(name, conf_mat):
+    df_cm = pd.DataFrame(conf_mat, index = [i for i in "0123456789"],columns = [i for i in "0123456789"])
+    fig = plt.figure(figsize = (10,7))
+
+    fig.suptitle(name, fontsize=16)
+
+    sn.heatmap(df_cm, annot=True)
+    plt.show()
 # plot_centroids(cluster_centers)
 time_1 = KNearestNeighbours(1)
 time_7 = KNearestNeighbours(7)
