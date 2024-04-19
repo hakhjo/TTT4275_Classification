@@ -5,6 +5,7 @@ from classifier import NN
 from sklearn.cluster import KMeans
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import confusion_matrix, accuracy_score
+import time
 def display_image(vec):
     plt.imshow(vec.reshape((28, 28)))
     plt.show()
@@ -23,6 +24,8 @@ train_x, train_y, test_x, test_y = data_loader.load_data()
 # print(c.evaluate(test_x[0]), test_y[0])
 # display_image(test_x[0])
 
+
+
 M = 64
 kmeans = KMeans(n_clusters=64)
 cluster_centers = np.zeros((10 * M, train_x.shape[1]))
@@ -34,46 +37,42 @@ for i in range(10):
     kmeans.fit(train_x[indices])
     cluster_centers[i*M:(i+1)*M] = kmeans.cluster_centers_
     cluster_labels[i*M:(i+1)*M] = i   
-    centroids[i*M:(i+1)*M] = cluster_centers[i*M:(i+1)*M].reshape(M, -1)
 
+def plot_centroids(cluster_centers):
+    for i in range(10):
+        centroids[i*M:(i+1)*M] = cluster_centers[i*M:(i+1)*M].reshape(M, -1)
+    reshaped_centroids = centroids.reshape((10 * M, 28, 28))
+    for i in range(10):
+        for j in range(M):
+            plt.subplot(10, M, i * M + j + 1)
+            plt.imshow(reshaped_centroids[i * M + j], cmap='gray')
+            plt.axis('off')
+    plt.show()
 
-reshaped_centroids = centroids.reshape((10 * M, 28, 28))
-for i in range(10):
-    for j in range(M):
-        plt.subplot(10, M, i * M + j + 1)
-        plt.imshow(reshaped_centroids[i * M + j], cmap='gray')
-        plt.axis('off')
-plt.show()
+def KNearestNeighbours(n_neighbors):
+    knn = KNeighborsClassifier(n_neighbors=n_neighbors)
+    
+    knn.fit(cluster_centers, cluster_labels)
+    start = time.time()
+    test_predictions = knn.predict(test_x)
+    end = time.time()
+    print(f"Time used NN with {n_neighbors}: {end - start}")
+    training_predictions = knn.predict(train_x)
 
-knn = KNeighborsClassifier(n_neighbors=1)
-knn.fit(cluster_centers, cluster_labels)
+    nn_conf_matrix_train = confusion_matrix(train_y, training_predictions)
+    nn_error_rate_train= 1 - accuracy_score(train_y, training_predictions)
+    print(f" train Conf matrix with K = {n_neighbors}:\n {nn_conf_matrix_train}")
+    print(f"train Error rate with K = {n_neighbors}:{nn_error_rate_train}")
+    nn_conf_matrix = confusion_matrix(test_y, test_predictions)
+    nn_error_rate = 1 - accuracy_score(test_y, test_predictions)
 
-training_predictions = knn.predict(train_x)
-test_predictions = knn.predict(test_x)
+    print(f"Conf matrix with K = {n_neighbors}:\n {nn_conf_matrix}")
+    print(f"Error rate with K = {n_neighbors} {nn_error_rate}")
 
-nn_conf_matrix_train = confusion_matrix(train_y, training_predictions)
-nn_error_rate_train= 1 - accuracy_score(train_y, training_predictions)
-print(" train Conf matrix with K = 1:\n", nn_conf_matrix_train)
-print("train Error rate with K = 1:", nn_error_rate_train)
-nn_conf_matrix = confusion_matrix(test_y, test_predictions)
-nn_error_rate = 1 - accuracy_score(test_y, test_predictions)
+    return end -start
+# plot_centroids(cluster_centers)
+time_1 = KNearestNeighbours(1)
+time_7 = KNearestNeighbours(7)
+print("increas in time:", time_7/time_1)
 
-print("Conf matrix with K = 1:\n", nn_conf_matrix)
-print("Error rate with K = 1:", nn_error_rate)
-
-knn = KNeighborsClassifier(n_neighbors=7)
-knn.fit(cluster_centers, cluster_labels)
-print("------------------------------------------\n")
-test_predictions = knn.predict(test_x)
-training_predictions = knn.predict(train_x)
-
-nn_conf_matrix_train = confusion_matrix(train_y, training_predictions)
-nn_error_rate_train= 1 - accuracy_score(train_y, training_predictions)
-print(" train Conf matrix with K = 7:\n", nn_conf_matrix_train)
-print("train Error rate with K = 7:", nn_error_rate_train)
-knn_conf_matrix = confusion_matrix(test_y, test_predictions)
-knn_error_rate = 1 - accuracy_score(test_y, test_predictions)
-
-print("Conf Matrix K=7:\n", knn_conf_matrix)
-print("Error Rate K=7):", knn_error_rate)
 
