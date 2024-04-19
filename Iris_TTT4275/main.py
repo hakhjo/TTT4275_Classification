@@ -4,6 +4,7 @@ from sklearn.preprocessing import OneHotEncoder
 from classifier import classifier 
 from data_modification import reduce_dataset, produce_histograms
 from matplotlib import pyplot as plt
+import seaborn as sn
 
 encoder = OneHotEncoder(sparse_output=False, categories="auto")
 
@@ -77,8 +78,10 @@ file_paths = ["class_1", "class_2", "class_3"]
 train_x, train_t, val_x, val_t = load_and_process_data(
     file_paths
 )
+
+produce_histograms(train_x, train_t)
 N = 4
-train_x = reduce_dataset(N, train_x)
+train_x = reduce_dataset(N, train_x, True)
 val_x = reduce_dataset(N, val_x)
 c = classifier(3, N)
 train_err, val_err = train_on_dataset(
@@ -86,8 +89,8 @@ train_err, val_err = train_on_dataset(
 )
 val_conf = c.confusion(val_x, val_t)
 train_conf = c.confusion(train_x, train_t)
-display_results(train_err, val_err, train_conf, val_conf)
 
+display_results(train_err, val_err, train_conf, val_conf)
 # reduce_dataset(3,train_features)
 # print("Validation Features:", val_features)
 # print(training_set)

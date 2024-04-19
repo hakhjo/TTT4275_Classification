@@ -24,6 +24,8 @@ def reduce_dataset(N, data_set, plot=False):
 
 def produce_histograms(x, t):
     class_labels = np.argmax(t, axis=1)
+    feature_names = ["sepal length","sepal width"," petal length","petal width" ]
+    class_name = ["Iris Setosa","Iris Versicolour", "Iris Virginica"]
     # Number of classes and features
     num_classes = t.shape[1]
     num_features = x.shape[1]
@@ -50,14 +52,14 @@ def produce_histograms(x, t):
             std = np.std(feature_values)
             print(mean, std)
             
-            axs[i].hist(feature_values, bins=bins, alpha=0.4, label=f'Class {j+1} ', density=True, edgecolor='black')
+            axs[i].hist(feature_values, bins=bins, alpha=0.4, label=class_name[j], density=True, edgecolor='black')
             normal_dist = norm.pdf(x_values, mean, std)
-            axs[i].plot(x_values, normal_dist, label=f'Class {j+1} PDF')
+            axs[i].plot(x_values, normal_dist, label=f'{class_name[j]} PDF')
         
         for mean in mean_features[:, i]:
             axs[i].axvline(x=mean, color='r', linestyle='dashed', linewidth=1)
         
-        axs[i].set_title(f'Feature {i+1}:')
+        axs[i].set_title(feature_names[i])
         axs[i].legend()
     
     plt.tight_layout()
