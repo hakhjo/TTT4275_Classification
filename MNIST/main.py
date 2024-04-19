@@ -8,25 +8,14 @@ from sklearn.cluster import KMeans
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import confusion_matrix, accuracy_score
 import time
+
+
 def display_image(vec):
     plt.imshow(vec.reshape((28, 28)))
     plt.show()
 
+
 train_x, train_y, test_x, test_y = data_loader.load_data()
-# print(train_x.shape)
-# p = np.random.permutation(len(train_x))[:1000]
-# c = NN(train_x[p], train_y[p], 10, 784)
-# test_conf, err = c.confusion(test_x, test_y)
-# train_conf = c.confusion(train_x, train_y)
-# test_conf = 100.0 * test_conf / np.sum(test_conf, axis=1)
-# # train_conf = 100.0 * train_conf / np.sum(train_conf, axis=1)
-# print(f"Error rate: {err*100:.2f}")
-# for tr in test_conf:
-#     print(" ".join(f"{c:>6.2f}" for c in tr))
-# print(c.evaluate(test_x[0]), test_y[0])
-# display_image(test_x[0])
-
-
 
 M = 64
 kmeans = KMeans(n_clusters=64)
@@ -88,3 +77,27 @@ time_7 = KNearestNeighbours(7)
 print("increas in time:", time_7/time_1)
 
 
+
+chunk_size = 1000
+n_chunks = int(np.ceil(len(test_x) / chunk_size))
+chunked_test_x = list(
+    [
+        test_x[i * chunk_size : min(len(test_x), ((i + 1) * chunk_size))]
+        for i in range(n_chunks)
+    ]
+)
+chunked_test_y = list(
+    [
+        test_y[i * chunk_size : min(len(test_y), ((i + 1) * chunk_size))]
+        for i in range(n_chunks)
+    ]
+)
+
+
+c = NN(train_x, train_y, 10, 784)
+test_conf, err = c.confusion(chunked_test_x, chunked_test_y)
+
+test_conf = 100.0 * test_conf / np.sum(test_conf, axis=1)
+print(f"Error rate: {err*100:.2f}")
+for tr in test_conf:
+    print(" ".join(f"{c:>6.2f}" for c in tr))
