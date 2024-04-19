@@ -9,6 +9,7 @@ encoder = OneHotEncoder(sparse_output=False, categories="auto")
 
 class_labels = np.array([[1], [2], [3]])
 encoder.fit(class_labels)
+np.random.seed(0)
 
 
 def load_and_process_data(file_paths):

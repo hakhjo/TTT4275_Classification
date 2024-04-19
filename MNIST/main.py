@@ -2,8 +2,6 @@ import numpy as np
 import data_loader
 from matplotlib import pyplot as plt
 from classifier import NN
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import confusion_matrix, accuracy_score
 
 
 def display_image(vec):
@@ -28,11 +26,6 @@ chunked_test_y = list(
     ]
 )
 
-c1 = KNeighborsClassifier(n_neighbors=1)
-c1.fit(train_x, train_y)
-pred = c1.predict(test_x)
-print(confusion_matrix(test_y, pred))
-print(1-accuracy_score(test_y, pred))
 
 c = NN(train_x, train_y, 10, 784)
 test_conf, err = c.confusion(chunked_test_x, chunked_test_y)
