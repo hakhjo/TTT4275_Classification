@@ -1,5 +1,8 @@
 import numpy as np
+import sklearn.cluster
 from tqdm import tqdm, trange
+import sklearn
+import collections
 
 
 class NNClassifier:
@@ -17,7 +20,10 @@ class NNClassifier:
         self.template_x_chunked = list(
             [
                 self.template_x[
-                    i * self.chunk_size : min(self.n_templates, ((i + 1) * self.chunk_size))
+                    i
+                    * self.chunk_size : min(
+                        self.n_templates, ((i + 1) * self.chunk_size)
+                    )
                 ]
                 for i in range(self.n_chunks)
             ]
@@ -25,7 +31,10 @@ class NNClassifier:
         self.template_y_chunked = list(
             [
                 self.template_y[
-                    i * self.chunk_size : min(self.n_templates, ((i + 1) * self.chunk_size))
+                    i
+                    * self.chunk_size : min(
+                        self.n_templates, ((i + 1) * self.chunk_size)
+                    )
                 ]
                 for i in range(self.n_chunks)
             ]
@@ -60,90 +69,57 @@ class NNClassifier:
                 for i in range(n_chunks)
             ]
         )
-        predictions = np.hstack([self.predict_chunk(chunk) for chunk in tqdm(chunked_x)])
+        predictions = np.hstack(
+            [self.predict_chunk(chunk) for chunk in tqdm(chunked_x)]
+        )
         return predictions
 
 
-# class KNNClassifier:
-#     def __init__(self, template_x, template_y, n_classes, chunk_size=None):
-#         self.n_classes = n_classes
-#         self.n_templates = len(template_x)
+class ClusteredKNNClassifier:
+    def __init__(self, template_x, template_y, n_classes, clusters_per_class):
+        self.n_classes = n_classes
+        self.n_templates = len(template_x)
 
-#         self.template_x = template_x
-#         self.template_y = template_y
+        self.template_x, self.template_y = ClusteredKNNClassifier.cluster_templates(
+            template_x,
+            template_y,
+            clusters_per_class,
+            n_classes,
+        )
 
-#         if chunk_size is None:
-#             self.chunk_size = n_classes
-#         else:
-#             self.chunk_size = chunk_size
-#         self.n_chunks = int(np.ceil(self.n_templates / self.chunk_size))
-#         self.template_x_chunked = list(
-#             [
-#                 self.template_x[
-#                     i * self.chunk_size : min(self.n_templates, ((i + 1) * self.chunk_size))
-#                 ]
-#                 for i in range(self.n_chunks)
-#             ]
-#         )
-#         self.template_y_chunked = list(
-#             [
-#                 self.template_y[
-#                     i * self.chunk_size : min(self.n_templates, ((i + 1) * self.chunk_size))
-#                 ]
-#                 for i in range(self.n_chunks)
-#             ]
-#         )
+    def cluster_templates(x, y, clusters_per_class, n_classes):
+        cluster_centers = np.zeros((n_classes * clusters_per_class, x.shape[1]))
+        cluster_labels = np.zeros((n_classes * clusters_per_class,), dtype=int)
+        for i in range(n_classes):
+            indices = np.where(y == i)[0]
+            kmeans = sklearn.cluster.KMeans(n_clusters=clusters_per_class)
+            kmeans.fit(x[indices])
+            cluster_centers[i * clusters_per_class : (i + 1) * clusters_per_class] = (
+                kmeans.cluster_centers_
+            )
+            cluster_labels[i * clusters_per_class : (i + 1) * clusters_per_class] = i
+        return cluster_centers, cluster_labels
 
-#     def predict_single(self, x):
-#         dist = np.sum(np.square(x - self.template_x), axis=1)
-#         idx = np.argmin(dist)
-#         return (self.template_y)[idx]
+    def predict_single(self, x, K):
+        dist = np.sum(np.square(x - self.template_x), axis=1)
+        lowest_indices = np.argpartition(dist, K)[:K]
+        lowest_dist = dist[lowest_indices]
+        sort_indices = np.argsort(lowest_dist)
+        lowest_dist = lowest_dist[sort_indices]
+        lowest_labels = self.template_y[lowest_indices][sort_indices]
+        return ordered_majority_vote(lowest_labels)
 
-#     def predict_chunk(self, x):
-#         minima = np.zeros((len(x), self.n_chunks))
-#         minima_labels = np.zeros_like(minima, dtype=int)
-#         for i in trange(self.n_chunks):
-#             diff = x[np.newaxis, :, :] - self.template_x_chunked[i][:, np.newaxis, :]
-#             dist = np.sum(np.square(diff), axis=2)
-#             min_idx = np.argmin(dist, axis=1)
-#             minima[:, i] = dist[range(len(x)), min_idx]
-#             minima_labels[:, i] = self.template_y_chunked[i][min_idx, 0]
-#         glb_min_idx = np.argmin(minima, axis=1)
-#         predictions = minima_labels[range(len(x)), glb_min_idx]
-#         return predictions
-
-#     def evaluate_array(self, x, chunk_size=None):
-#         N = len(x)
-#         if chunk_size is None:
-#             chunk_size = N
-#         n_chunks = int(np.ceil(N / chunk_size))
-#         chunked_x = list(
-#             [
-#                 x[i * chunk_size : min(N, ((i + 1) * chunk_size))]
-#                 for i in range(n_chunks)
-#             ]
-#         )
-#         predictions = np.hstack([self.predict_chunk(chunk) for chunk in tqdm(chunked_x)])
-#         return predictions
+    def predict_array(self, x, K):
+        predictions = [self.predict_single(xk, K) for xk in tqdm(x)]
+        return np.hstack(predictions)
 
 
-#     def confusion(self, x, y):
-#         errors = 0
-#         samples = 0
-#         conf = np.zeros((self.n_classes, self.n_classes))
-#         for i in trange(len(x)):
-#             samples += len(x[i])
-#             pred = self.predict_chunk(x[i])
-#             for guess, yk in zip(pred, y[i]):
-#                 conf[yk[0], guess] += 1
-#                 if guess != yk[0]:
-#                     errors += 1
-#         return conf, errors / samples
-
-#     def validate(self, x, y):
-#         errors = 0
-#         for xk, yk in zip(x, y):
-#             guess = self.evaluate(xk)
-#             if guess[0] != yk[0]:
-#                 errors += 1
-#         return errors / len(x)
+def ordered_majority_vote(x):
+    c = collections.OrderedDict()
+    for i in x:
+        if i in c:
+            c[i] += 1
+        else:
+            c[i] = 1
+    maxidx = np.argmax(c.values())
+    return list(c.keys())[maxidx]
