@@ -1,7 +1,9 @@
 
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
+import pandas as pd
 import mpl_toolkits.mplot3d
+import seaborn as sn
 import numpy as np
 from scipy.stats import norm
 
@@ -20,12 +22,12 @@ def reduce_dataset(N, data_set, plot=False):
     return data_set_reduced
 
 
-
+feature_names = ["sepal length","sepal width"," petal length","petal width" ]
+class_name = ["Iris Setosa","Iris Versicolour", "Iris Virginica"]
 
 def produce_histograms(x, t):
     class_labels = np.argmax(t, axis=1)
-    feature_names = ["sepal length","sepal width"," petal length","petal width" ]
-    class_name = ["Iris Setosa","Iris Versicolour", "Iris Virginica"]
+    
     # Number of classes and features
     num_classes = t.shape[1]
     num_features = x.shape[1]
@@ -110,4 +112,15 @@ def produce_histograms1(x,t):
         axs[i].legend()
 
     plt.tight_layout()
+    plt.show()
+
+
+
+def plot_confusion_matrix(name, conf_mat):
+    df_cm = pd.DataFrame(conf_mat, index = [i for i in class_name],columns = [i for i in class_name])
+    fig = plt.figure(figsize = (10,7))
+
+    fig.suptitle(name, fontsize=16)
+
+    sn.heatmap(df_cm, annot=True)
     plt.show()

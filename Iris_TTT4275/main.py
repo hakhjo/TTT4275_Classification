@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 from classifier import classifier 
-from data_modification import reduce_dataset, produce_histograms
+from data_modification import *
 from matplotlib import pyplot as plt
 import seaborn as sn
 
@@ -36,13 +36,13 @@ def load_and_process_data(file_paths):
     return training_data, training_labels, validation_data, validation_labels
 
 
-def train_on_dataset(c: classifier, x, t, N, x_val, t_val):
+def train_on_dataset(c: classifier, x, t, N, step_size, x_val, t_val):
     train_err = np.zeros(N)
     val_err = np.zeros(N)
     assert len(x) == len(t)
     for i in range(N):
         p = np.random.permutation(len(x))
-        err = c.train(x[p, :], t[p, :], 0.001)
+        err = c.train(x[p, :], t[p, :], step_size)
         train_err[i] = err
         val_err[i] = c.validate(x_val, t_val)
         print(f"TRAINING... {i}/{N}: \t{100*err:.2f}", end="\r", flush=True)
@@ -80,15 +80,16 @@ train_x, train_t, val_x, val_t = load_and_process_data(
 )
 
 produce_histograms(train_x, train_t)
-N = 4
+N = 2
 train_x = reduce_dataset(N, train_x, True)
 val_x = reduce_dataset(N, val_x)
 c = classifier(3, N)
 train_err, val_err = train_on_dataset(
-    c, train_x, train_t, 2000, train_x, train_t
+    c, train_x, train_t, 2000, 0.001,train_x, train_t
 )
 val_conf = c.confusion(val_x, val_t)
 train_conf = c.confusion(train_x, train_t)
+plot_confusion_matrix("confusion matrix",val_conf)
 
 display_results(train_err, val_err, train_conf, val_conf)
 # reduce_dataset(3,train_features)
