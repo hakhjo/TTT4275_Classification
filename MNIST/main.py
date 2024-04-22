@@ -4,11 +4,12 @@ from matplotlib import pyplot as plt
 from classifier import NNClassifier, ClusteredKNNClassifier
 import time
 
+np.random.seed(0)
+
 train_x, train_y, test_x, test_y = utils.load_data()
 
 M = 64
 N = 10
-
 
 def run_KNN_timed(c: ClusteredKNNClassifier, K):
     start = time.time()
@@ -33,8 +34,8 @@ def run_NN_timed(c: NNClassifier):
 
 
 
-# c = NNClassifier(train_x, train_y, chunk_size=1000)
-# run_NN_timed(c)
+c = NNClassifier(train_x, train_y, chunk_size=1000)
+run_NN_timed(c)
 
 start_cluster = time.time()
 c = ClusteredKNNClassifier(train_x, train_y, N, M)
