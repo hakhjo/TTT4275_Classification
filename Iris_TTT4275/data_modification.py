@@ -54,7 +54,7 @@ def produce_histograms(x, t):
     
     print(mean_features)
     
-    fig, axs = plt.subplots(num_features, 1, figsize=(10, 8))
+    fig, axs = plt.subplots(num_features, 1, figsize=(14, 10))
     
     for i in range(num_features):
         feature_min = np.min(x[:, i])
@@ -78,7 +78,7 @@ def produce_histograms(x, t):
         axs[i].legend()
     
     plt.tight_layout()
-    plt.show()
+    plt.savefig("features_IRIS.pdf", format="pdf")
 
 
 def produce_histograms_split(file_paths):
@@ -174,13 +174,85 @@ def plot_feature_trends(file_paths):
 
 
 def plot_confusion_matrix(name, conf_mat):
-    df_cm = pd.DataFrame(conf_mat, index = [i for i in class_name],columns = [i for i in class_name])
+    sn.set_theme(font_scale=2)
+    df_cm = pd.DataFrame(conf_mat, index = [i.replace("Iris", "") for i in class_name],columns = [i.replace("Iris", "") for i in class_name])
     fig = plt.figure(figsize = (10,7))
 
-    fig.suptitle(name, fontsize=16)
+    # fig.suptitle(name, fontsize=16)
 
-    sn.heatmap(df_cm, annot=True)
+    sn.heatmap(df_cm, annot=True, annot_kws={'size':26})
     plt.savefig(f'{name}.pdf',format="pdf")
 
+def plot_correlation_matrix(data):
+    # Convert numpy array data to pandas DataFrame
+    column_names = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
+    df = pd.DataFrame(data, columns=column_names)
+    
+    # Calculate the correlation matrix
+    correlation_matrix = df.corr()
+    
+    # Create a heatmap to visualize the correlation matrix
+    plt.figure(figsize=(8, 6))
+    sn.heatmap(correlation_matrix, annot=True, fmt=".2f", cmap='coolwarm', 
+                cbar=True, linewidths=0.5, linecolor='w')
+    plt.title('Correlation Matrix of Iris Dataset Features')
+    # plt.show()
+    plt.savefig("iris_corr_features.pdf", format="pdf")
 
 
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.lines import Line2D
+
+def plot_3d_decision_boundary_between_two_classes(classifier, X, t):
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    
+    # Define ranges and meshgrid
+    x1_min, x1_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    x2_min, x2_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+    x3_min, x3_max = X[:, 2].min() - 1, X[:, 2].max() + 1
+    x1_range = np.linspace(x1_min, x1_max, num=100)
+    x2_range = np.linspace(x2_min, x2_max, num=100)
+    x1, x2 = np.meshgrid(x1_range, x2_range)
+    
+    w = classifier.W[1, :] - classifier.W[2, :]
+    print(w)
+    x3 = -(w[0] * x1 + w[1] * x2 + w[3]) / w[2]
+    
+    # Plot the decision boundary surface
+    surf = ax.plot_surface(x1, x2, x3, color='magenta', alpha=0.3)
+    classes_to_plot = [1,2]
+    labels = np.argmax(t, axis=1)
+    class_colors = np.array(['r', 'g', 'b'])
+    for c in classes_to_plot:
+        ix = np.where(labels == c)
+        ax.scatter(X[ix, 0], X[ix, 1], X[ix, 2], c=class_colors[c], label=f'{class_name[c]}', s=100)
+    ax.tick_params(labelsize=12)  
+    ax.set_xlabel(feature_names[1], fontsize=14) 
+    ax.set_ylabel(feature_names[2], fontsize=14) 
+    ax.set_zlabel(feature_names[3], fontsize=14) 
+    ax.set_xlim(x1_min, x1_max)
+    ax.set_ylim(x2_min, x2_max)
+    ax.set_zlim(x3_min, x3_max)
+    # surf_legend = Line2D([0], [0], linestyle="none", c='magenta', marker = 'o')
+    ax.legend( [ax.scatter([],[],[], color=class_colors[c], label=f'{class_name[c]}', edgecolor='k') for c in classes_to_plot],
+               [f'{class_name[c]}' for c in classes_to_plot], numpoints=1, fontsize='x-large')
+    
+
+    plt.show()
+
+
+def plot_step_size_convergence():
+    step_sizes = [1.0,0.1, 0.01,0.001,]   
+    colors = ['b', 'g', 'r', 'c']
+    for i, step_size in enumerate(step_sizes):
+        c = classifier(3, N)
+        train_err, val_err = train_on_dataset(c, train_x, train_t, 2000, step_size, train_x, train_t)
+        plt.plot(val_err, color=colors[i], alpha=0.2)
+        window_size = 10
+        running_avg = np.convolve(val_err, np.ones(window_size)/window_size, mode='valid')
+        plt.plot(running_avg, label=f"Step Size: {step_size}",color=colors[i])
+    plt.ylabel("Error rate")
+    plt.xlabel("Iterations")
+    plt.legend()
+    plt.savefig("convergence.pdf", format="pdf")
