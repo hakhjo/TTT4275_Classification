@@ -1,9 +1,9 @@
 import numpy as np
-import sklearn.cluster
+import sklearn.neighbors
 from tqdm import tqdm, trange
-import sklearn
+import sklearn.cluster
 import collections
-
+from time import sleep
 
 class NNClassifier:
     def __init__(self, template_x, template_y, chunk_size=None):
@@ -40,10 +40,15 @@ class NNClassifier:
             ]
         )
 
+    def get_nn(self, x):
+        dist = np.sum(np.square(x - self.template_x), axis=1)
+        idx = np.argmin(dist)
+        return self.template_y[idx], self.template_x[idx]
+
     def predict_single(self, x):
         dist = np.sum(np.square(x - self.template_x), axis=1)
         idx = np.argmin(dist)
-        return (self.template_y)[idx]
+        return self.template_y[idx]
 
     def predict_chunk(self, x):
         minima = np.zeros((len(x), self.n_chunks))
@@ -107,11 +112,17 @@ class ClusteredKNNClassifier:
         sort_indices = np.argsort(lowest_dist)
         lowest_dist = lowest_dist[sort_indices]
         lowest_labels = self.template_y[lowest_indices][sort_indices]
-        return ordered_majority_vote(lowest_labels)
+        pred = ordered_majority_vote(lowest_labels)
+        return pred
 
     def predict_array(self, x, K):
         predictions = [self.predict_single(xk, K) for xk in tqdm(x)]
         return np.hstack(predictions)
+    
+    def get_nn(self, x):
+        dist = np.sum(np.square(x - self.template_x), axis=1)
+        idx = np.argmin(dist)
+        return self.template_y[idx], self.template_x[idx]
 
 
 def ordered_majority_vote(x):
@@ -121,5 +132,5 @@ def ordered_majority_vote(x):
             c[i] += 1
         else:
             c[i] = 1
-    maxidx = np.argmax(c.values())
+    maxidx = np.argmax(list(c.values()))
     return list(c.keys())[maxidx]
