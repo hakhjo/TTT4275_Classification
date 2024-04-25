@@ -81,20 +81,20 @@ def train_on_dataset(c: classifier, x, t, N, step_size, x_test, t_test):
 
 
 
-train_x, train_t, test_x, test_t, all_data, all_data_t = load_and_process_data(file_paths, "sepal length")
+# train_x, train_t, test_x, test_t, all_data, all_data_t = load_and_process_data(file_paths, "sepal length")
 
-N = 3
-# train_x, train_t, test_x, test_t, all_data, all_data_t = load_and_process_data(file_paths)
+N = 4
+train_x, train_t, test_x, test_t, all_data, all_data_t = load_and_process_data(file_paths)
 # train_x = reduce_dataset(N, train_x)
 # test_x  = reduce_dataset(N, test_x)
 c = classifier(3, N)
 train_err, test_err = train_on_dataset(c, train_x, train_t, 2000, 0.001, test_x, test_t)
 test_conf = c.confusion(test_x, test_t)
 train_conf = c.confusion(train_x, train_t)
-# plot_confusion_matrix("test confusion matrix", test_conf)
-# plot_confusion_matrix("training confusion matrix", train_conf)
-plot_3d_decision_boundary_between_two_classes(c,train_x, train_t)
-plot_3d_decision_boundary_between_two_classes(c,test_x , test_t)
+plot_confusion_matrix("test confusion matrix", test_conf)
+plot_confusion_matrix("training confusion matrix", train_conf)
+# plot_3d_decision_boundary_between_two_classes(c,train_x, train_t)
+# plot_3d_decision_boundary_between_two_classes(c,test_x , test_t)
 
 # display_results(train_err, test_err, train_conf, test_conf)
 

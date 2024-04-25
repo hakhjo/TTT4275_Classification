@@ -7,6 +7,10 @@ import numpy as np
 from scipy.stats import norm
 from sklearn.preprocessing import OneHotEncoder
 
+
+plt.rcParams["mathtext.fontset"] = "stix"
+plt.rcParams["font.family"] = "STIXGeneral"
+plt.rcParams["text.usetex"] = True
 encoder = OneHotEncoder(sparse_output=False, categories="auto")
 
 class_labels = np.array([[1], [2], [3]])
@@ -41,7 +45,7 @@ def plot_dataset(N, x_reduced, t_reduced):
     
 feature_names = ["sepal length","sepal width"," petal length","petal width" ]
 class_name = ["Iris Setosa","Iris Versicolour", "Iris Virginica"]
-
+class_names_latex = ["$Setosa$","$Versicolour$", "$Virginica$"]
 def produce_histograms(x, t):
     class_labels = np.argmax(t, axis=1)
     num_classes = t.shape[1]
@@ -174,13 +178,10 @@ def plot_feature_trends(file_paths):
 
 
 def plot_confusion_matrix(name, conf_mat):
-    sn.set_theme(font_scale=2)
-    df_cm = pd.DataFrame(conf_mat, index = [i.replace("Iris", "") for i in class_name],columns = [i.replace("Iris", "") for i in class_name])
-    fig = plt.figure(figsize = (10,7))
+    sn.set_theme(font_scale=1.5)
+    df_cm = pd.DataFrame(conf_mat, index = [i for i in class_names_latex],columns = [i for i in class_names_latex])
 
-    # fig.suptitle(name, fontsize=16)
-
-    sn.heatmap(df_cm, annot=True, annot_kws={'size':26})
+    sn.heatmap(df_cm, annot=True, annot_kws={'size':26}, cbar=False, square=True)
     plt.savefig(f'{name}.pdf',format="pdf")
 
 def plot_correlation_matrix(data):
