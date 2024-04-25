@@ -223,23 +223,25 @@ def plot_test_k():
     with open("kmeans-test", "rb") as f:
         res = pickle.load(f)
         l1 = plt.plot(res["k"], res["score"], label="$J^\\ast$")
-        plt.tick_params(axis="y", labelcolor="b", color="b")
+        plt.tick_params(axis="y", labelcolor="b", color="b", labelsize=14)
+        plt.tick_params(axis="x", labelsize=14)
         plt.twinx()
         l2 = plt.plot(res["k"], res["time"], label="clustering time", color="r")
-        plt.xlabel("K")
-        plt.ylabel("[s]", color="r")
-        plt.tick_params(axis="y", labelcolor="r", color="r")
+        plt.xlabel("K", fontsize=14)
+        plt.ylabel("[s]", color="r", fontsize=14)
+        plt.tick_params(axis="y", labelcolor="r", color="r", labelsize=14)
         lines = l1+l2
         labels = [l.get_label() for l in lines]
-        plt.legend(lines, labels, loc=9)
-        plt.savefig("figs/kmeans_k_comparison.pdf")
+        plt.legend(lines, labels, loc=9, fontsize=14)
+        plt.savefig("figs/kmeans_k_comparison.pdf", bbox_inches="tight")
         plt.show()
     
 # clust_explore_predictions()
-res = utils.result_from_file("NN_cmplt")
-utils.plot_confusion_matrix(res.conf)
+# res = utils.result_from_file("NN_cmplt")
+# utils.plot_confusion_matrix(res.conf)
 # disp_CNN()
 
+plot_test_k()
 
 
 # misclassifications()
