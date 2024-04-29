@@ -5,12 +5,27 @@ import scipy.io
 import seaborn as sn
 
 
-def plot_confusion_matrix(conf_mat, classes=list(i for i in "0123456789")):
-    g = sn.heatmap(conf_mat, annot=True, xticklabels=classes, yticklabels=classes, cbar=False, fmt='g', annot_kws={"size": 12}, square=True)
-    g.set_xticklabels(g.get_xmajorticklabels(), fontsize = 12)
+def plot_confusion_matrix(conf_mat, classes=list(i for i in "0123456789"), file=None):
+    g = sn.heatmap(
+        conf_mat,
+        annot=True,
+        xticklabels=classes,
+        yticklabels=classes,
+        cbar=False,
+        fmt=".1%",
+        annot_kws={"size": 12},
+        square=True,
+    )
+    g.set_xticklabels(g.get_xmajorticklabels(), fontsize=12)
+    g.set_yticklabels(g.get_ymajorticklabels(), fontsize=12)
     plt.xlabel("$\\hat{\\omega}$", fontsize=18)
     plt.ylabel("$\\omega$", fontsize=18)
-    plt.show()
+    if file is not None:
+        plt.savefig(file, bbox_inches="tight")
+        plt.clf()
+    else:
+        plt.show()
+
 
 def display_image(vec):
     plt.imshow(vec.reshape((28, 28)))
@@ -37,8 +52,10 @@ def confusion_matrix(predictions, truths, N, relative=False):
     else:
         return mat
 
+
 def confusion_percentage(mat):
     return mat / np.sum(mat, axis=1)
+
 
 def error_rate(predictions, truths):
     assert predictions.shape == truths.shape
@@ -64,10 +81,11 @@ def mat_tostring(mat):
 
 
 def wilson_CI(p0, n, z_a=1.96):
-    q0 = 1-p0
-    R = z_a*np.sqrt(p0*q0/n+z_a**2/(4*n**2))/(1+(z_a**2)/n)
-    p = (p0+(z_a**2)/(2*n))/(1+z_a**2/n)
-    return p-R, p+R
+    q0 = 1 - p0
+    R = z_a * np.sqrt(p0 * q0 / n + z_a**2 / (4 * n**2)) / (1 + (z_a**2) / n)
+    p = (p0 + (z_a**2) / (2 * n)) / (1 + z_a**2 / n)
+    return p - R, p + R
+
 
 def plot_centroids(cluster_centers, M, N):
     centroids = cluster_centers.reshape((N * M, 28, 28))
@@ -106,7 +124,7 @@ CONFUSION MATRIX:
         with open(fname, "wb") as f:
             return pickle.dump(this, f)
 
+
 def result_from_file(fname) -> Result:
     with open(fname, "rb") as f:
         return pickle.load(f)
-    
