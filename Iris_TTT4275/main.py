@@ -18,7 +18,6 @@ file_paths = ["class_1", "class_2", "class_3"]
 
 
 def drop_feature(data, feature_name):
-    # Find the index of the feature name
     feature_index = feature_names.index(feature_name)
     
     if isinstance(feature_index, int) and feature_index >= 0 and feature_index < data.shape[1]:
@@ -41,6 +40,7 @@ def load_and_process_data(file_paths, feature_to_drop = None):
             # data = drop_feature(data, "petal width")
             # data = drop_feature(data, "sepal width")
             data = drop_feature(data, feature_to_drop)
+            data = drop_feature(data, "sepal length")
             
         train = data.head(30)
         validate = data.tail(20)
@@ -81,10 +81,11 @@ def train_on_dataset(c: classifier, x, t, N, step_size, x_test, t_test):
 
 
 
-# train_x, train_t, test_x, test_t, all_data, all_data_t = load_and_process_data(file_paths, "sepal length")
+train_x, train_t, test_x, test_t, all_data, all_data_t = load_and_process_data(file_paths, "sepal width")
+N = 1
 
-N = 4
-train_x, train_t, test_x, test_t, all_data, all_data_t = load_and_process_data(file_paths)
+# train_x, train_t, test_x, test_t, all_data, all_data_t = load_and_process_data(file_paths)
+# N = 4
 # train_x = reduce_dataset(N, train_x)
 # test_x  = reduce_dataset(N, test_x)
 c = classifier(3, N)
@@ -92,27 +93,30 @@ train_err, test_err = train_on_dataset(c, train_x, train_t, 2000, 0.001, test_x,
 test_conf = c.confusion(test_x, test_t)
 train_conf = c.confusion(train_x, train_t)
 # plot_confusion_matrix("test confusion matrix", test_conf)
-produce_histograms(all_data, all_data_t)
+# produce_histograms(all_data, all_data_t)
 # plot_confusion_matrix("training confusion matrix", train_conf)
 # plot_3d_decision_boundary_between_two_classes(c,train_x, train_t)
 # plot_3d_decision_boundary_between_two_classes(c,test_x , test_t)
-
-# display_results(train_err, test_err, train_conf, test_conf)
+# plot_correlation_matrix(all_data)
+display_results(train_err, test_err, train_conf, test_conf)
 
 def load_train_and_print_error(file_paths):
     train_x, train_t, test_x, test_t, all_data, all_t = load_and_process_data(file_paths)
     # Train with all features
     c = classifier(3, len(train_x[0]))
-    train_err, val_err = train_on_dataset(c, train_x, train_t, 2000, 0.001, test_x, test_t)
-    print(f"Error rate with all features: {100*val_err[-1]:.2f}")
-    
+    train_err, test_err = train_on_dataset(c, train_x, train_t, 2000, 0.001, test_x, test_t)
+    print(f"ERR_T with all features: {100*test_err[-1]:.2f}")
+    print(f"ERR_D with all features: {100*train_err[-1]:.2f}")
+
     # Train with each feature removed
     for feature_name in feature_names:
+        np.random.seed(0)
         train_x, train_t, test_x, test_t, all_data, all_t = load_and_process_data(file_paths, feature_name)
-        print(len(train_x[0]))
         c = classifier(3, len(train_x[0]))
-        train_err, val_err = train_on_dataset(c, train_x, train_t, 2000, 0.001, test_x, test_t)
-        print(f"Error rate without {feature_name} feature:  {100*val_err[-1]:.2f}")
+        train_err, test_err = train_on_dataset(c, train_x, train_t, 2000, 0.001, test_x, test_t)
+        print(f"EER_T without {feature_name} feature:  {100*test_err[-1]:.2f}")
+        print(f"EER_D rate without {feature_name} feature:  {100*train_err[-1]:.2f}")
+
 
 # load_train_and_print_error(file_paths)
 # plot_correlation_matrix(all_data)
