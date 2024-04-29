@@ -38,8 +38,8 @@ def load_and_process_data(file_paths, feature_to_drop = None):
     for i, file_path in enumerate(file_paths, start=1):
         data = pd.read_csv(file_path, header=None)
         if feature_to_drop != None:
-            data = drop_feature(data, "petal width")
-            data = drop_feature(data, "sepal width")
+            # data = drop_feature(data, "petal width")
+            # data = drop_feature(data, "sepal width")
             data = drop_feature(data, feature_to_drop)
             
         train = data.head(30)
