@@ -24,26 +24,28 @@ def train_on_dataset(c: classifier, train_x, train_y, N, step_size, test_x, test
     print("TRAINING... DONE                      ")
     return train_err, test_err
 
-
-
-# train_x, train_y, test_x, test_y, x, y = load_data(file_paths, drop_features="sepal width")
-# c = classifier(n_classes, n_features-1)
-# train_err, test_err = train_on_dataset(c, train_x, train_y, 2000, 0.001, test_x, test_y)
+# remove_features = ["petal length","sepal width", "sepal length"]
+# remove_features = ["sepal width", "sepal length"]
+remove_features = []
+train_x, train_y, test_x, test_y, x, y = load_data(1, remove_features)
+# c = classifier(n_classes, n_features-len(remove_features))
+# train_err, test_err = train_on_dataset(c, train_x, train_y, 750, 0.01, test_x, test_y)
 # test_conf = c.confusion(test_x, test_y)
 # train_conf = c.confusion(train_x, train_y)
-
-
+# print(len(train_x))
+# l, u = wilson_CI(test_err[-1], len(train_x))
+# print(l*100,u*100)
 # plot_confusion_matrix("test confusion matrix", test_conf)
-# produce_histograms(all_data, all_data_t)
 # plot_confusion_matrix("training confusion matrix", train_conf)
+# produce_histograms(x, y)
 # plot_3d_decision_boundary_between_two_classes(c,train_x, train_t)
 # plot_3d_decision_boundary_between_two_classes(c,test_x , test_t)
-# plot_correlation_matrix(all_data)
+# plot_correlation_matrix(x)
 
 
 # display_results(train_err, test_err, train_conf, test_conf)
 
-def load_train_and_print_error(file_paths):
+def load_train_and_print_error():
     train_x, train_y, test_x, test_y, x, y = load_data(drop_features="sepal width")
     # Train with all features
     c = classifier(3, len(train_x[0]))
@@ -61,14 +63,12 @@ def load_train_and_print_error(file_paths):
         print(f"EER_D rate without {feature_name}:  {100*train_err[-1]:.2f}")
 
 
-# load_train_and_print_error(file_paths)
-# plot_correlation_matrix(all_data)
-def plot_step_size_convergence(train_x, tra):
+def plot_step_size_convergence( train_x, train_y, test_x, text_y):
     step_sizes = [1.0,0.1, 0.01,0.001]   
     colors = ['b', 'g', 'r', 'c']
     for i, step_size in enumerate(step_sizes):
         c = classifier(3, len(train_x[0]))
-        train_err, val_err = train_on_dataset(c, train_x, train_y, 2000, step_size, train_x, train_y)
+        train_err, val_err = train_on_dataset(c, train_x, train_y, 2000, step_size, test_x, text_y)
         plt.plot(val_err, color=colors[i], alpha=0.2)
         window_size = 10
         running_avg = np.convolve(val_err, np.ones(window_size)/window_size, mode='valid')
@@ -78,6 +78,5 @@ def plot_step_size_convergence(train_x, tra):
     plt.legend()
     plt.savefig("convergence.pdf", format="pdf")
 
-load_train_and_print_error(file_paths)
+pair_plot(x,y)
 
-# plot_step_size_convergence()

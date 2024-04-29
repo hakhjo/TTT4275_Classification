@@ -20,4 +20,11 @@ def display_results(train_err, test_err, train_conf, val_conf):
     plt.xlabel("Iteration")
     plt.ylabel("Error rate")
     plt.legend()
-    plt.savefig("error_rate_20.pdf",format="pdf")
+    plt.savefig("error_rate_20.png",format="png")
+
+
+def wilson_CI(p0, n, z_a=1.96):
+    q0 = 1 - p0
+    R = z_a * np.sqrt(p0 * q0 / n + z_a**2 / (4 * n**2)) / (1 + (z_a**2) / n)
+    p = (p0 + (z_a**2) / (2 * n)) / (1 + z_a**2 / n)
+    return p - R, p + R

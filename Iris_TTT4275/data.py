@@ -63,7 +63,3 @@ def load_data(var=1, drop_features=()):
 
     return train_x, train_y, test_x, test_y, x, y
 
-
-if __name__ == "__main__":
-    load_data(drop_features=("sepal length",))
-    print(new_names(("sepal length", "sepal width")))
