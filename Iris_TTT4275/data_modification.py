@@ -185,28 +185,28 @@ def plot_feature_trends(file_paths):
 
 def plot_confusion_matrix(name, conf_mat):
     # sn.set_theme(font_scale=1.5)
-    df_cm = pd.DataFrame(conf_mat, index = [i for i in class_names_latex],columns = [i for i in class_names_latex])
+    df_cm = pd.DataFrame(conf_mat, index = [i for i in class_names_latex_short],columns = [i for i in class_names_latex_short])
 
     g = sn.heatmap(df_cm, annot=True, annot_kws={'size':26}, cbar=False, square=True, fmt='g')
-    g.set_xticklabels([i for i in class_names_latex], fontsize= 18)
-    g.set_yticklabels([i for i in class_names_latex], fontsize= 18)
+    g.set_xticklabels([i for i in class_names_latex_short], fontsize= 18)
+    g.set_yticklabels([i for i in class_names_latex_short], fontsize= 18)
     plt.savefig(f'{name}.pdf',format="pdf")
     plt.clf()
 
 def plot_correlation_matrix(data):
     # Convert numpy array data to pandas DataFrame
-    column_names = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
-    df = pd.DataFrame(data, columns=column_names)
+    
+    df = pd.DataFrame(data, columns=feature_names_latex)
     
     # Calculate the correlation matrix
     correlation_matrix = df.corr()
     
     # Create a heatmap to visualize the correlation matrix
     plt.figure(figsize=(8, 6))
-    sn.heatmap(correlation_matrix, annot=True, fmt=".2f", cmap='coolwarm', 
-                cbar=True, linewidths=0.5, linecolor='w')
-    plt.title('Correlation Matrix of Iris Dataset Features')
-    # plt.show()
+    g = sn.heatmap(correlation_matrix, annot=True,annot_kws={'size':26}, fmt=".2f", cmap='coolwarm', 
+                cbar=False, linewidths=0.5, linecolor='w')
+    g.set_xticklabels([i for i in feature_names_latex], fontsize= 14)
+    g.set_yticklabels([i for i in feature_names_latex], fontsize= 14)
     plt.savefig("iris_corr_features.pdf", format="pdf")
 
 
