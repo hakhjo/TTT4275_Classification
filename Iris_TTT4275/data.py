@@ -3,6 +3,7 @@ import numpy as np
 
 class_names = ["Iris Setosa","Iris Versicolour", "Iris Virginica"]
 feature_names = ["sepal length","sepal width","petal length","petal width"]
+class_names_short = ["Setosa","Versicolour", "Virginica"]
 file_paths = ["class_1", "class_2", "class_3"]
 n_features = 4
 n_classes = 3
@@ -25,11 +26,14 @@ def drop_feature(data, feature):
 def new_names(features):
     return [n for n in feature_names if n not in features]
 
-def load_data(file_paths, var=1, drop_features=()):
+def load_data(var=1, drop_features=()):
     train_x = []
     test_x = []
     train_y = []
     test_y = []
+
+    if isinstance(drop_features, str):
+        drop_features = (drop_features, )
 
     for i, file_path in enumerate(file_paths):
         data = pd.read_csv(file_path, header=None).to_numpy()
@@ -42,6 +46,8 @@ def load_data(file_paths, var=1, drop_features=()):
         elif var == 2:
             train = data[20:]
             test = data[:20]
+        else:
+            raise Exception
 
         train_x.append(train)
         test_x.append(test)
@@ -59,5 +65,5 @@ def load_data(file_paths, var=1, drop_features=()):
 
 
 if __name__ == "__main__":
-    load_data(file_paths, drop_features=("sepal length",))
+    load_data(drop_features=("sepal length",))
     print(new_names(("sepal length", "sepal width")))

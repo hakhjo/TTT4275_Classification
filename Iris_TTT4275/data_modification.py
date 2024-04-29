@@ -5,29 +5,12 @@ import mpl_toolkits.mplot3d
 import seaborn as sn
 import numpy as np
 from scipy.stats import norm
-from sklearn.preprocessing import OneHotEncoder
+from data import *
 
 
 plt.rcParams["mathtext.fontset"] = "stix"
 plt.rcParams["font.family"] = "STIXGeneral"
 plt.rcParams["text.usetex"] = True
-encoder = OneHotEncoder(sparse_output=False, categories="auto")
-
-class_labels = np.array([[1], [2], [3]])
-encoder.fit(class_labels)
-
-def reduce_dataset(N, data_set, plot=False):
-    pca = PCA(n_components=N)
-    data_set_reduced = pca.fit_transform(data_set)
-    if plot:
-        fig = plt.figure(1, figsize=(8, 6))
-        plt.bar(range(len(pca.explained_variance_ratio_)), pca.explained_variance_ratio_)
-        plt.xlabel('Principal Component')
-        plt.ylabel('Explained Variance Ratio')
-        plt.show()
-    
-    print("shape of dataset:", data_set_reduced.shape)
-    return data_set_reduced
 
 def plot_dataset(N, x_reduced, t_reduced):    
     if N == 3:
@@ -43,51 +26,37 @@ def plot_dataset(N, x_reduced, t_reduced):
         ax.legend()
         plt.show()
     
-feature_names = ["sepal length","sepal width"," petal length","petal width" ]
-feature_names_latex = ["$Sepal$ $length$","$Sepal$ $width$","$Petal$ $length$","$Petal$ $width$"]
 
-class_name = ["Iris Setosa","Iris Versicolour", "Iris Virginica"]
-class_names_latex_short = ["$Setosa$","$Versicolour$", "$Virginica$"]
-class_name_latex = ["$Iris$ $Setosa$","$Iris$ $Versicolour$", "$Iris$ $Virginica$"]
-
-def produce_histograms(x, t):
-    class_labels = np.argmax(t, axis=1)
-    num_classes = t.shape[1]
-    num_features = x.shape[1]
-    
-    mean_features = np.zeros((num_classes, num_features))
-    
-    for i in range(num_classes):
+def produce_histograms(x, y):
+    class_labels = np.argmax(y, axis=1)
+    mean_features = np.zeros((n_classes, n_features))
+    for i in range(n_classes):
         mean_features[i, :] = np.mean(x[class_labels == i], axis=0)
+        
+    fig, axs = plt.subplots(n_features, 1, figsize=(14, 10))
     
-    print(mean_features)
-    
-    fig, axs = plt.subplots(num_features, 1, figsize=(14, 10))
-    
-    for i in range(num_features):
+    for i in range(n_features):
         feature_min = np.min(x[:, i])
         feature_max = np.max(x[:, i])
         bins = np.arange(feature_min, feature_max + 0.1, 0.1)  
         x_values = np.linspace(feature_min, feature_max, 300)
-        for j in range(num_classes):
+        for j in range(n_classes):
             feature_values = x[class_labels == j, i]
             mean = np.mean(feature_values)
             std = np.std(feature_values)
             
-            axs[i].hist(feature_values, bins=bins, alpha=0.4, label=class_name_latex[j], density=True, edgecolor='black')
+            axs[i].hist(feature_values, bins=bins, alpha=0.4, label=class_names[j], density=True, edgecolor='black')
             normal_dist = norm.pdf(x_values, mean, std)
             axs[i].plot(x_values, normal_dist)
         
         for mean in mean_features[:, i]:
             axs[i].axvline(x=mean, color='r', linestyle='dashed', linewidth=1)
         
-        axs[i].set_title(feature_names_latex[i], fontsize=25)
+        axs[i].set_title(feature_names[i], fontsize=25)
         axs[i].tick_params(axis='both', which='major', labelsize=20)  # Setting the font size for tick labels
         if i == 1:
             axs[i].legend(fontsize = 20)    
-    
     plt.tight_layout()
-    
     plt.savefig("features_IRIS.pdf", format="pdf")
 
 
@@ -144,8 +113,8 @@ def produce_histograms_split(file_paths):
 
             normal_dist_first = norm.pdf(x_values, mean_first, std_first)
             normal_dist_last = norm.pdf(x_values, mean_last, std_last)
-            axs[i, 0].plot(x_values, normal_dist_first, 'r--', label=f'{class_name[j]}: μ={mean_first:.2f}, σ={std_first:.2f}')
-            axs[i, 1].plot(x_values, normal_dist_last, 'r--', label=f'{class_name[j]}: μ={mean_last:.2f}, σ={std_last:.2f}')
+            axs[i, 0].plot(x_values, normal_dist_first, 'r--', label=f'{class_names[j]}: μ={mean_first:.2f}, σ={std_first:.2f}')
+            axs[i, 1].plot(x_values, normal_dist_last, 'r--', label=f'{class_names[j]}: μ={mean_last:.2f}, σ={std_last:.2f}')
 
             # Plotting the mean lines for reference
             axs[i, 0].axvline(x=mean_first, color='red', linestyle='dashed', linewidth=1)
@@ -185,18 +154,18 @@ def plot_feature_trends(file_paths):
 
 def plot_confusion_matrix(name, conf_mat):
     # sn.set_theme(font_scale=1.5)
-    df_cm = pd.DataFrame(conf_mat, index = [i for i in class_names_latex_short],columns = [i for i in class_names_latex_short])
+    df_cm = pd.DataFrame(conf_mat, index = [i for i in class_names_short],columns = [i for i in class_names_short])
 
     g = sn.heatmap(df_cm, annot=True, annot_kws={'size':26}, cbar=False, square=True, fmt='g')
-    g.set_xticklabels([i for i in class_names_latex_short], fontsize= 18)
-    g.set_yticklabels([i for i in class_names_latex_short], fontsize= 18)
+    g.set_xticklabels([i for i in class_names_short], fontsize= 18)
+    g.set_yticklabels([i for i in class_names_short], fontsize= 18)
     plt.savefig(f'{name}.pdf',format="pdf")
     plt.clf()
 
 def plot_correlation_matrix(data):
     # Convert numpy array data to pandas DataFrame
     
-    df = pd.DataFrame(data, columns=feature_names_latex)
+    df = pd.DataFrame(data, columns=feature_names)
     
     # Calculate the correlation matrix
     correlation_matrix = df.corr()
@@ -205,8 +174,8 @@ def plot_correlation_matrix(data):
     plt.figure(figsize=(8, 6))
     g = sn.heatmap(correlation_matrix, annot=True,annot_kws={'size':26}, fmt=".2f", cmap='coolwarm', 
                 cbar=False, linewidths=0.5, linecolor='w')
-    g.set_xticklabels([i for i in feature_names_latex], fontsize= 14)
-    g.set_yticklabels([i for i in feature_names_latex], fontsize= 14)
+    g.set_xticklabels([i for i in feature_names], fontsize= 14)
+    g.set_yticklabels([i for i in feature_names], fontsize= 14)
     plt.savefig("iris_corr_features.pdf", format="pdf")
 
 
@@ -236,7 +205,7 @@ def plot_3d_decision_boundary_between_two_classes(classifier, X, t):
     class_colors = np.array(['r', 'g', 'b'])
     for c in classes_to_plot:
         ix = np.where(labels == c)
-        ax.scatter(X[ix, 0], X[ix, 1], X[ix, 2], c=class_colors[c], label=f'{class_name[c]}', s=100)
+        ax.scatter(X[ix, 0], X[ix, 1], X[ix, 2], c=class_colors[c], label=f'{class_names[c]}', s=100)
     ax.tick_params(labelsize=12)  
     ax.set_xlabel(feature_names[1], fontsize=14) 
     ax.set_ylabel(feature_names[2], fontsize=14) 
@@ -245,8 +214,8 @@ def plot_3d_decision_boundary_between_two_classes(classifier, X, t):
     ax.set_ylim(x2_min, x2_max)
     ax.set_zlim(x3_min, x3_max)
     # surf_legend = Line2D([0], [0], linestyle="none", c='magenta', marker = 'o')
-    ax.legend( [ax.scatter([],[],[], color=class_colors[c], label=f'{class_name[c]}', edgecolor='k') for c in classes_to_plot],
-               [f'{class_name[c]}' for c in classes_to_plot], numpoints=1, fontsize='x-large')
+    ax.legend( [ax.scatter([],[],[], color=class_colors[c], label=f'{class_names[c]}', edgecolor='k') for c in classes_to_plot],
+               [f'{class_names[c]}' for c in classes_to_plot], numpoints=1, fontsize='x-large')
     
 
     plt.show()

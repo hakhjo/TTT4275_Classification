@@ -6,7 +6,6 @@ class classifier:
         sigma = 0.1
         self.W = np.random.normal(mu, sigma, (C, D+1))
         self.C = C
-        self.D = D
 
     def gradient(self, x, g, t):
         return np.outer((g-t)*g*(1-g), x.T)
