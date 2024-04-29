@@ -49,7 +49,7 @@ def load_train_and_print_error():
     train_x, train_y, test_x, test_y, x, y = load_data(drop_features="sepal width")
     # Train with all features
     c = classifier(3, len(train_x[0]))
-    train_err, test_err = train_on_dataset(c, train_x, train_y, 750, 0.01, test_x, test_y)
+    train_err, test_err = train_on_dataset(c, train_x, train_y, 1500, 0.005, test_x, test_y)
     print(f"ERR_T with all features: {100*test_err[-1]:.2f}")
     print(f"ERR_D with all features: {100*train_err[-1]:.2f}")
 
@@ -58,7 +58,7 @@ def load_train_and_print_error():
         np.random.seed(0)
         train_x, train_y, test_x, test_y, x, y = load_data(drop_features=feature_name)
         c = classifier(3, len(train_x[0]))
-        train_err, test_err = train_on_dataset(c, train_x, train_y, 750, 0.01, test_x, test_y)
+        train_err, test_err = train_on_dataset(c, train_x, train_y, 1500, 0.005, test_x, test_y)
         print(f"EER_T without {feature_name}:  {100*test_err[-1]:.2f}")
         print(f"EER_D rate without {feature_name}:  {100*train_err[-1]:.2f}")
 
