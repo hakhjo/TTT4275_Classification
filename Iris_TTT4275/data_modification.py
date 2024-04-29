@@ -44,8 +44,12 @@ def plot_dataset(N, x_reduced, t_reduced):
         plt.show()
     
 feature_names = ["sepal length","sepal width"," petal length","petal width" ]
+feature_names_latex = ["$Sepal$ $length$","$Sepal$ $width$","$Petal$ $length$","$Petal$ $width$"]
+
 class_name = ["Iris Setosa","Iris Versicolour", "Iris Virginica"]
-class_names_latex = ["$Setosa$","$Versicolour$", "$Virginica$"]
+class_names_latex_short = ["$Setosa$","$Versicolour$", "$Virginica$"]
+class_name_latex = ["$Iris$ $Setosa$","$Iris$ $Versicolour$", "$Iris$ $Virginica$"]
+
 def produce_histograms(x, t):
     class_labels = np.argmax(t, axis=1)
     num_classes = t.shape[1]
@@ -69,19 +73,21 @@ def produce_histograms(x, t):
             feature_values = x[class_labels == j, i]
             mean = np.mean(feature_values)
             std = np.std(feature_values)
-            print(mean, std)
             
-            axs[i].hist(feature_values, bins=bins, alpha=0.4, label=class_name[j], density=True, edgecolor='black')
+            axs[i].hist(feature_values, bins=bins, alpha=0.4, label=class_name_latex[j], density=True, edgecolor='black')
             normal_dist = norm.pdf(x_values, mean, std)
-            axs[i].plot(x_values, normal_dist, label=f'{class_name[j]} PDF')
+            axs[i].plot(x_values, normal_dist)
         
         for mean in mean_features[:, i]:
             axs[i].axvline(x=mean, color='r', linestyle='dashed', linewidth=1)
         
-        axs[i].set_title(feature_names[i])
-        axs[i].legend()
+        axs[i].set_title(feature_names_latex[i], fontsize=25)
+        axs[i].tick_params(axis='both', which='major', labelsize=20)  # Setting the font size for tick labels
+        if i == 1:
+            axs[i].legend(fontsize = 20)    
     
     plt.tight_layout()
+    
     plt.savefig("features_IRIS.pdf", format="pdf")
 
 
@@ -178,11 +184,14 @@ def plot_feature_trends(file_paths):
 
 
 def plot_confusion_matrix(name, conf_mat):
-    sn.set_theme(font_scale=1.5)
+    # sn.set_theme(font_scale=1.5)
     df_cm = pd.DataFrame(conf_mat, index = [i for i in class_names_latex],columns = [i for i in class_names_latex])
 
-    sn.heatmap(df_cm, annot=True, annot_kws={'size':26}, cbar=False, square=True)
+    g = sn.heatmap(df_cm, annot=True, annot_kws={'size':26}, cbar=False, square=True, fmt='g')
+    g.set_xticklabels([i for i in class_names_latex], fontsize= 18)
+    g.set_yticklabels([i for i in class_names_latex], fontsize= 18)
     plt.savefig(f'{name}.pdf',format="pdf")
+    plt.clf()
 
 def plot_correlation_matrix(data):
     # Convert numpy array data to pandas DataFrame
@@ -242,18 +251,3 @@ def plot_3d_decision_boundary_between_two_classes(classifier, X, t):
 
     plt.show()
 
-
-def plot_step_size_convergence():
-    step_sizes = [1.0,0.1, 0.01,0.001,]   
-    colors = ['b', 'g', 'r', 'c']
-    for i, step_size in enumerate(step_sizes):
-        c = classifier(3, N)
-        train_err, val_err = train_on_dataset(c, train_x, train_t, 2000, step_size, train_x, train_t)
-        plt.plot(val_err, color=colors[i], alpha=0.2)
-        window_size = 10
-        running_avg = np.convolve(val_err, np.ones(window_size)/window_size, mode='valid')
-        plt.plot(running_avg, label=f"Step Size: {step_size}",color=colors[i])
-    plt.ylabel("Error rate")
-    plt.xlabel("Iterations")
-    plt.legend()
-    plt.savefig("convergence.pdf", format="pdf")
