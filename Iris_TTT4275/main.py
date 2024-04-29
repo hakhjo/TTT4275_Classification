@@ -63,7 +63,7 @@ def load_train_and_print_error(file_paths):
 
 # load_train_and_print_error(file_paths)
 # plot_correlation_matrix(all_data)
-def plot_step_size_convergence():
+def plot_step_size_convergence(train_x, tra):
     step_sizes = [1.0,0.1, 0.01,0.001]   
     colors = ['b', 'g', 'r', 'c']
     for i, step_size in enumerate(step_sizes):
