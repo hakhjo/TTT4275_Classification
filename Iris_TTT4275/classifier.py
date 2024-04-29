@@ -14,13 +14,16 @@ class classifier:
         return sigmoid(self.W @ x)
     
     def train(self, x, t, step):
+        grad = np.zeros_like(self.W)
         errors = 0
         for xk_, tk in zip(x, t):
             xk = np.append(xk_, 1)
             g = self.evaluate(xk)
-            self.W = self.W - step * self.gradient(xk, g, tk)
+            grad += self.gradient(xk, g, tk)
+            # self.W = self.W - step * self.gradient(xk, g, tk)
             if np.argmax(g) != np.argmax(tk):
                 errors += 1
+        self.W = self.W - step * grad
         return errors / len(x)
 
     def confusion(self, x, t):
