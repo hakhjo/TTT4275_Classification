@@ -38,8 +38,8 @@ def load_and_process_data(file_paths, feature_to_drop = None):
     for i, file_path in enumerate(file_paths, start=1):
         data = pd.read_csv(file_path, header=None)
         if feature_to_drop != None:
-            # data = drop_feature(data, "petal width")
-            # data = drop_feature(data, "sepal width")
+            data = drop_feature(data, "petal width")
+            data = drop_feature(data, "sepal width")
             data = drop_feature(data, feature_to_drop)
             
         train = data.head(30)
@@ -91,8 +91,9 @@ c = classifier(3, N)
 train_err, test_err = train_on_dataset(c, train_x, train_t, 2000, 0.001, test_x, test_t)
 test_conf = c.confusion(test_x, test_t)
 train_conf = c.confusion(train_x, train_t)
-plot_confusion_matrix("test confusion matrix", test_conf)
-plot_confusion_matrix("training confusion matrix", train_conf)
+# plot_confusion_matrix("test confusion matrix", test_conf)
+produce_histograms(all_data, all_data_t)
+# plot_confusion_matrix("training confusion matrix", train_conf)
 # plot_3d_decision_boundary_between_two_classes(c,train_x, train_t)
 # plot_3d_decision_boundary_between_two_classes(c,test_x , test_t)
 
@@ -115,3 +116,19 @@ def load_train_and_print_error(file_paths):
 
 # load_train_and_print_error(file_paths)
 # plot_correlation_matrix(all_data)
+def plot_step_size_convergence():
+    step_sizes = [1.0,0.1, 0.01,0.001]   
+    colors = ['b', 'g', 'r', 'c']
+    for i, step_size in enumerate(step_sizes):
+        c = classifier(3, N)
+        train_err, val_err = train_on_dataset(c, train_x, train_t, 2000, step_size, train_x, train_t)
+        plt.plot(val_err, color=colors[i], alpha=0.2)
+        window_size = 10
+        running_avg = np.convolve(val_err, np.ones(window_size)/window_size, mode='valid')
+        plt.plot(running_avg, label=f"$Step$ $Size:$ ${step_size}$",color=colors[i])
+    plt.ylabel("$Error$ $rate$")
+    plt.xlabel("$Iterations$")
+    plt.legend()
+    plt.savefig("convergence.pdf", format="pdf")
+
+# plot_step_size_convergence()
