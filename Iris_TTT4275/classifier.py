@@ -20,7 +20,7 @@ class classifier:
             xk = np.append(xk_, 1)
             g = self.evaluate(xk)
             grad += self.gradient(xk, g, tk)
-            # self.W = self.W - step * self.gradient(xk, g, tk)
+            # self.W = self.W - step * self.gradient(xk, g, tk) Commented out for Batch approch
             if np.argmax(g) != np.argmax(tk):
                 errors += 1
         self.W = self.W - step * grad
@@ -46,6 +46,20 @@ class classifier:
             if guess != truth:
                 errors += 1
         return errors / len(x)
+
+    def train_on_dataset(self, train_x, train_y, N, step_size, test_x, test_y):
+        train_err = np.zeros(N)
+        test_err = np.zeros(N)
+        assert len(train_x) == len(train_y)
+        for i in range(N):
+            p = np.random.permutation(len(train_x))
+            err = self.train(train_x[p, :], train_y[p, :], step_size)
+            train_err[i] = err
+            test_err[i] = self.validate(test_x, test_y)
+            print(f"TRAINING... {i}/{N}: \t{100*err:.2f}", end="\r", flush=True)
+
+        print("TRAINING... DONE                      ")
+        return train_err, test_err
         
 
 def sigmoid(x):
