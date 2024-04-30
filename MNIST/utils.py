@@ -1,9 +1,7 @@
 import pickle
 from matplotlib import pyplot as plt
 import numpy as np
-import scipy.io
 import seaborn as sn
-
 
 def plot_confusion_matrix(conf_mat, classes=list(i for i in "0123456789"), file=None):
     g = sn.heatmap(
@@ -30,15 +28,6 @@ def plot_confusion_matrix(conf_mat, classes=list(i for i in "0123456789"), file=
 def display_image(vec):
     plt.imshow(vec.reshape((28, 28)))
     plt.show()
-
-
-def load_data():
-    f = scipy.io.loadmat("data_all.mat")
-    testv = np.array(f["testv"], dtype=np.int32)
-    trainv = np.array(f["trainv"], dtype=np.int32)
-    testlab = np.array(f["testlab"], dtype=np.int32)
-    trainlab = np.array(f["trainlab"], dtype=np.int32)
-    return trainv, trainlab, testv, testlab
 
 
 def confusion_matrix(predictions, truths, N, relative=False):

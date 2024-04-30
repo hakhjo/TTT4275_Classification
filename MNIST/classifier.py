@@ -3,7 +3,7 @@ import sklearn.neighbors
 from tqdm import tqdm, trange
 import sklearn.cluster
 import collections
-from time import sleep
+
 
 class NNClassifier:
     def __init__(self, template_x, template_y, chunk_size=None):
@@ -118,7 +118,7 @@ class ClusteredKNNClassifier:
     def predict_array(self, x, K):
         predictions = [self.predict_single(xk, K) for xk in tqdm(x)]
         return np.hstack(predictions)
-    
+
     def get_nn(self, x):
         dist = np.sum(np.square(x - self.template_x), axis=1)
         idx = np.argmin(dist)
