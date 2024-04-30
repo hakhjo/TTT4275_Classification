@@ -44,7 +44,7 @@ def train_on_dataset(c: classifier, train_x, train_y, N, step_size, test_x, test
 # display_results(train_err, test_err, train_conf, test_conf)
 
 def load_train_and_print_error(file_paths):
-    train_x, train_y, test_x, test_y, x, y = load_data(drop_features="sepal width")
+    train_x, train_y, test_x, test_y, x, y = load_data()
     # Train with all features
     c = classifier(3, len(train_x[0]))
     train_err, test_err = train_on_dataset(c, train_x, train_y, 1500, 0.005, test_x, test_y)
@@ -63,21 +63,23 @@ def load_train_and_print_error(file_paths):
 
 # load_train_and_print_error(file_paths)
 # plot_correlation_matrix(all_data)
-def plot_step_size_convergence(train_x, tra):
-    step_sizes = [1.0,0.1, 0.01,0.001]   
+def plot_step_size_convergence():
+    step_sizes = [0.1, 0.01, 0.005, 0.001]   
+    train_x, train_y, test_x, test_y, x, y = load_data()
     colors = ['b', 'g', 'r', 'c']
-    for i, step_size in enumerate(step_sizes):
+    for color, step_size in zip(colors, step_sizes):
+        np.random.seed(0)
         c = classifier(3, len(train_x[0]))
-        train_err, val_err = train_on_dataset(c, train_x, train_y, 2000, step_size, train_x, train_y)
-        plt.plot(val_err, color=colors[i], alpha=0.2)
-        window_size = 10
-        running_avg = np.convolve(val_err, np.ones(window_size)/window_size, mode='valid')
-        plt.plot(running_avg, label=f"$Step$ $Size:$ ${step_size}$",color=colors[i])
-    plt.ylabel("$Error$ $rate$")
-    plt.xlabel("$Iterations$")
+        train_err, test_err = train_on_dataset(c, train_x, train_y, 2000, step_size, test_x, test_y)
+        plt.plot(test_err, color=color, label=f"Step Size: {step_size}")#, alpha=0.2)
+        # window_size = 10
+        # running_avg = np.convolve(test_err, np.ones(window_size)/window_size, mode='valid')
+        # plt.plot(running_avg, label=f"Step Size: {step_size}",color=color)
+    plt.ylabel("$ERR_T$")
+    plt.xlabel("Training step")
     plt.legend()
     plt.savefig("convergence.pdf", format="pdf")
 
-load_train_and_print_error(file_paths)
+# load_train_and_print_error(file_paths)
 
-# plot_step_size_convergence()
+plot_step_size_convergence()

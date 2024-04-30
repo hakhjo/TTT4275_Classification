@@ -56,6 +56,8 @@ def plot_confusion_matrix(name, conf_mat):
     g = sn.heatmap(df_cm, annot=True, annot_kws={'size':26}, cbar=False, square=True, fmt='g')
     g.set_xticklabels([i for i in class_names_short], fontsize= 18)
     g.set_yticklabels([i for i in class_names_short], fontsize= 18)
+    plt.xlabel("$\\hat{\\omega}$", fontsize=20)
+    plt.ylabel("$\\omega$", fontsize=20)
     plt.savefig(f'{name}.pdf',format="pdf")
     plt.clf()
 
