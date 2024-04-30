@@ -80,6 +80,8 @@ def plot_correlation_matrix(data):
 
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.lines import Line2D
+import seaborn as sn
+import pandas as pd
 
 def plot_3d_decision_boundary_between_two_classes(classifier, X, t):
     fig = plt.figure(figsize=(10, 8))
@@ -119,3 +121,48 @@ def plot_3d_decision_boundary_between_two_classes(classifier, X, t):
 
     plt.show()
 
+from scipy.stats import pearsonr
+def pair_plot(x, y):
+    df = pd.DataFrame(x, columns=feature_names)
+    t = np.argmax(y, axis=1)
+    sn.set_theme(font_scale=2, rc={'text.usetex': True, "mathtext.fontset" : "stix","font.family":"STIXGeneral" })
+    g = sn.PairGrid(df)
+
+    for i, j in zip(*np.triu_indices_from(g.axes, k=1)):
+        ax = g.axes[i, j]
+        r, _ = pearsonr(df.iloc[:, i], df.iloc[:, j])
+        ax.annotate(f'$\\rho$ = {r:.2f}', xy=(.5, .5), xycoords='axes fraction', ha='center')
+        ax.set_axis_off()
+
+    # Set feature names on the diagonal
+    for i in range(len(feature_names)):
+        ax = g.axes[i, i]
+        ax.clear()  
+        ax.text(0.5, 0.5, feature_names[i], transform=ax.transAxes,
+                ha="center", va="center", fontsize=20)
+        ax.set_axis_off()
+
+    g.hue_names = class_names
+    g.map_lower(sn.scatterplot, hue=[class_names[i] for i in t])
+    # Add a legend
+    g.add_legend()
+    g.set(xlabel='', ylabel='')
+
+
+    
+    # def reg_coef(x,y,label=None,color=None,**kwargs):
+    #     ax = plt.gca()
+    #     r,p = pearsonr(x,y)
+    #     ax.annotate('r = {:.2f}'.format(r), xy=(0.5,0.5), xycoords='axes fraction', ha='center')
+    #     ax.set_axis_off()
+
+    # def label_diag(x, **kwargs):
+    #     ax = plt.gca()
+    #     ax.text(0.5, 0.5, x.name, ha='center', va='center', fontsize=12)
+    #     ax.set_axis_off()
+
+       
+
+    plt.savefig("scatter_plots.pdf", format="pdf")
+    plt.clf()
+    plt.close('all')
