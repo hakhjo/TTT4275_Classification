@@ -37,21 +37,7 @@ def wilson_CI(p0, n, z_a=1.6449):
     return p - R, p + R
 
 
-def plot_step_size_convergence(train_x, train_y, test_x, test_y):
-    step_sizes = [1.0,0.1, 0.01,0.001]   
-    colors = ['b', 'g', 'r', 'c']
-    for color, step_size in zip(colors, step_sizes):
-        np.random.seed(0)
-        c = classifier(3, len(train_x[0]))
-        train_err, val_err = c.train_on_dataset(train_x, train_y, 1500, 0.005, test_x, test_y)
-        plt.plot(val_err, color=colors[i], alpha=0.2)
-        window_size = 10
-        running_avg = np.convolve(val_err, np.ones(window_size)/window_size, mode='valid')
-        plt.plot(running_avg, label=f"$Step$ $Size:$ ${step_size}$",color=colors[i])
-    plt.ylabel("$Error$ $rate$")
-    plt.xlabel("$Iterations$")
-    plt.legend()
-    plt.savefig("convergence.pdf", format="pdf")
+
 
 
 def load_train_and_print_error():
