@@ -24,17 +24,15 @@ def train_on_dataset(c: classifier, train_x, train_y, N, step_size, test_x, test
     print("TRAINING... DONE                      ")
     return train_err, test_err
 
-# remove_features = ["petal length","sepal width", "sepal length"]
+remove_features = ["petal length","sepal width", "sepal length"]
 # remove_features = ["sepal width", "sepal length"]
-remove_features = []
+# remove_features = ["sepal width"]
+# remove_features = []
 train_x, train_y, test_x, test_y, x, y = load_data(1, remove_features)
-# c = classifier(n_classes, n_features-len(remove_features))
-# train_err, test_err = train_on_dataset(c, train_x, train_y, 750, 0.01, test_x, test_y)
-# test_conf = c.confusion(test_x, test_y)
-# train_conf = c.confusion(train_x, train_y)
-# print(len(train_x))
-# l, u = wilson_CI(test_err[-1], len(train_x))
-# print(l*100,u*100)
+c = classifier(n_classes, n_features-len(remove_features))
+train_err, test_err = train_on_dataset(c, train_x, train_y, 1500, 0.005, test_x, test_y)
+test_conf = c.confusion(test_x, test_y)
+train_conf = c.confusion(train_x, train_y)
 # plot_confusion_matrix("test confusion matrix", test_conf)
 # plot_confusion_matrix("training confusion matrix", train_conf)
 # produce_histograms(x, y)
@@ -43,7 +41,7 @@ train_x, train_y, test_x, test_y, x, y = load_data(1, remove_features)
 # plot_correlation_matrix(x)
 
 
-# display_results(train_err, test_err, train_conf, test_conf)
+display_results(train_err, test_err, train_conf, test_conf, len(train_x), len(test_x))
 
 def load_train_and_print_error():
     train_x, train_y, test_x, test_y, x, y = load_data(drop_features="sepal width")
@@ -59,8 +57,11 @@ def load_train_and_print_error():
         train_x, train_y, test_x, test_y, x, y = load_data(drop_features=feature_name)
         c = classifier(3, len(train_x[0]))
         train_err, test_err = train_on_dataset(c, train_x, train_y, 1500, 0.005, test_x, test_y)
-        print(f"EER_T without {feature_name}:  {100*test_err[-1]:.2f}")
-        print(f"EER_D rate without {feature_name}:  {100*train_err[-1]:.2f}")
+        print(len(test_err), len(test_x))
+        l_test, u_test = wilson_CI(test_err[-1], len(test_x))
+        l_train, u_train = wilson_CI(train_err[-1], len(train_x))
+        print(f"EER_T without {feature_name}:  {100*test_err[-1]:.2f}, CI [{100*l_test:.2f},{100*u_test:.2f}] ")
+        print(f"EER_D rate without {feature_name}:  {100*train_err[-1]:.2f}  CI [{100*l_train:.2f},{100*u_train:.2f}]")
 
 
 def plot_step_size_convergence( train_x, train_y, test_x, text_y):
@@ -78,5 +79,6 @@ def plot_step_size_convergence( train_x, train_y, test_x, text_y):
     plt.legend()
     plt.savefig("convergence.pdf", format="pdf")
 
-pair_plot(x,y)
+# pair_plot(x,y)
+# load_train_and_print_error()
 

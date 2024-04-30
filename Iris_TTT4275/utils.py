@@ -1,12 +1,17 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-def display_results(train_err, test_err, train_conf, val_conf):
+def display_results(train_err, test_err, train_conf, val_conf, len_train, len_test):
     val_conf = 100.0 * val_conf / np.sum(val_conf, axis=1)
     train_conf = 100.0 * train_conf / np.sum(train_conf, axis=1)
+    l_test, u_test = wilson_CI(test_err[-1], len_test)
+    l_train, u_train = wilson_CI(test_err[-1], len_train)
+
+
     print("\n------------- RESULTS ---------------")
     print("    Validation:            Training:")
     print(f"ERROR RATE: {100 * test_err[-1]:.2f}            {100 * train_err[-1]:.2f}")
+    print(f"CI [{100*l_test:.2f},{100*u_test:.2f}]         CI [{100*l_train:.2f},{100*u_train:.2f}]")
     print("CONFUSION MATRICES")
     for vr, tr in zip(val_conf, train_conf):
         print(
